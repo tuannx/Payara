@@ -1,0 +1,35 @@
+name: CI Tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'FISH-*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Build & Test (JDK 21)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: 'maven'
+
+      - name: Build module dependencies
+        run: |
+          mvn install -DskipTests -pl nucleus/payara-modules/healthcheck-core,appserver/web/web-core,nucleus/core/kernel -am -T 4
+
+      - name: Run unit tests
+        run: |
+          mvn test -pl nucleus/payara-modules/healthcheck-core,appserver/web/web-core,nucleus/core/kernel
